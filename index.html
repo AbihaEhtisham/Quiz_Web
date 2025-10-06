@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kin Quiz</title>
+<style>
+  :root{
+    --accent:#34d399;
+    --text:#f1f5f9;
+    --muted:#9ca3af;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+ body {
+  font-family: 'Poppins', sans-serif;
+  background: url('background.png') no-repeat center center / cover;
+  background-attachment: fixed;
+  color: var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:1rem;
+}
+
+  .container{
+    max-width:420px;
+    width:100%;
+    background: rgba(0,0,0,0.6);
+    border-radius:16px;
+    padding:1.5rem;
+    text-align:center;
+    transition: all 0.3s ease-in-out;
+  }
+  h1{font-size:1.6rem; margin-bottom:0.8rem;}
+  p{color:var(--muted); font-size:0.95rem; margin-bottom:1.2rem;}
+  .btn{
+    width:100%;
+    padding:0.9rem;
+    border:none;
+    border-radius:10px;
+    background: var(--accent);
+    color:#062026;
+    font-weight:600;
+    font-size:1rem;
+    cursor:pointer;
+    margin-top:0.8rem;
+  }
+  .btn:active{opacity:0.8;}
+  .question{font-weight:600; font-size:1rem; margin-bottom:1rem; opacity:0; transform: translateY(20px); transition: 0.4s;}
+  .question.show{opacity:1; transform: translateY(0);}
+  .options{display:grid; gap:0.8rem;}
+  .option{
+    background: rgba(255,255,255,0.1);
+    border-radius:10px;
+    padding:0.8rem;
+    cursor:pointer;
+    transition:0.15s;
+  }
+  .option.selected{
+    background: rgba(52,211,153,0.3);
+    border:1px solid #22c55e;
+  }
+  .hidden{display:none;}
+  .result h2{margin-bottom:0.5rem;}
+  .iq{font-size:2rem; color:var(--accent); margin:0.3rem 0;}
+  .progress-bar-container{
+    width:100%;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    height: 10px;
+  }
+  .progress-bar{
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 10px;
+    transition: width 0.3s;
+  }
+</style>
+</head>
+<body>
+  <!-- Start Screen -->
+  <div class="container" id="startScreen">
+    <h1>Kin Quiz 🎉</h1>
+    <p>Ready to check your family knowledge through Kin Quiz on Hafsa's B-DAY! 🎂🥳</p>
+    <button class="btn" onclick="startQuiz()">Start Quiz</button>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div class="container hidden" id="quizScreen">
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div id="questionArea" class="question"></div>
+    <div id="optionsArea" class="options"></div>
+    <button class="btn" onclick="nextQuestion()">Next</button>
+  </div>
+
+  <!-- Result Screen -->
+  <div class="container hidden" id="resultScreen">
+    <div class="result">
+      <h2>Your Score 🎯</h2>
+      <div class="iq" id="iqValue">0%</div>
+      <p id="iqText"></p>
+      <button class="btn" onclick="restartQuiz()">Try Again</button>
+    </div>
+  </div>
+
+<script>
+const questions = [
+  {q:"Back in our MALKA-MAREIZ days, we all played fairies… but one legendary guy joined the fairy squad too 👑✨ HE WAS A FAIRY 😂 Can you guess who broke all the rules of fairyhood that day?", options:["Aitzaz","Ahsan","Hassan","Faseeh"], answer:1},
+  {q:"Every pack has one who is the lone wolf among us? 🐺", options:["Aiza","Minha","Rabbia","Hafsa"], answer:3},
+  {q:"The boy gang’s biggest hurdle — the one who turns every hangout into a stealth mission 😏 Jaise hi bikes start hoti hain, awaaz aati hai: ‘Ghar se bahar mat niklo!’ 🚫🏍😂 Guess who this strict officer is?", options:["Ammi/Ami","Papa/Mamu Shami","Phuphu/Khala Aneela","Chachu/Mamu Khayam"], answer:3},
+  {q:"Guess who bleeds green — the one whose status is always about Pakistan or General Asim Munir 💚", options:["Faseeh","Abiha","Ahsan","Hijab"], answer:0},
+  {q:"They’ve got more nicknames than contacts in your phone — guess the legend! 😂📱", options:["Minha","Rabbia","Arfa","Hassan"], answer:1},
+  {q:"While others buy toys, they buy serums — who’s the cousin glowing brighter than the moon? 🌕😂", options:["Hafsa","Hassan","Aiza","Aitzaz"], answer:1},
+  {q:"Guess the family’s spy — the one who can’t keep a single secret and updates the elders faster than WhatsApp!", options:["Azlan","Rabbia","Arfa","Ahsan"], answer:2},
+  {q:"There’s one cousin whose weight is still a top secret mission 😄📏 Guess who’s keeping the mystery alive?", options:["Hijab","Rabbia","Faseeh","Arfa"], answer:0},
+  {q:"Even the toys can wait, but not the makeup pouch! 👶✨ Guess the one who’s born to be glam!", options:["Aiza","Abiha","Minha","Hijab"], answer:2},
+  {q:"Who’s so sincere about peace and quiet that even their anger comes with limited words but maximum impact? 😬💥", options:["Aitzaz","Ahsan","Aiza","Abiha"], answer:3}
+];
+
+let index=0, score=0;
+const startScreen=document.getElementById("startScreen");
+const quizScreen=document.getElementById("quizScreen");
+const resultScreen=document.getElementById("resultScreen");
+const qArea=document.getElementById("questionArea");
+const optArea=document.getElementById("optionsArea");
+const iqValue=document.getElementById("iqValue");
+const iqText=document.getElementById("iqText");
+const progressBar=document.getElementById("progressBar");
+
+function startQuiz(){
+  startScreen.classList.add("hidden");
+  quizScreen.classList.remove("hidden");
+  index=0; score=0;
+  loadQuestion();
+  updateProgress();
+}
+
+function loadQuestion(){
+  const q=questions[index];
+  qArea.classList.remove("show");
+  setTimeout(()=>{
+    qArea.innerHTML=`<div>${index+1}. ${q.q}</div>`;
+    optArea.innerHTML="";
+    q.options.forEach((opt,i)=>{
+      const div=document.createElement("div");
+      div.className="option";
+      div.textContent=opt;
+      div.onclick=()=>{
+        document.querySelectorAll(".option").forEach(o=>o.classList.remove("selected"));
+        div.classList.add("selected");
+        div.dataset.selected=i;
+      };
+      optArea.appendChild(div);
+    });
+    qArea.classList.add("show");
+  },200);
+  updateProgress();
+}
+
+function nextQuestion(){
+  const selected=document.querySelector(".option.selected");
+  if(!selected){alert("Please select an option!");return;}
+  const ans=parseInt(selected.dataset.selected);
+  if(ans===questions[index].answer) score++;
+  index++;
+  if(index<questions.length) loadQuestion();
+  else showResult();
+}
+
+function updateProgress(){
+  const percent = Math.round((index/questions.length)*100);
+  progressBar.style.width = percent + '%';
+}
+
+function showResult(){
+  quizScreen.classList.add("hidden");
+  resultScreen.classList.remove("hidden");
+  const percentage = Math.round((score/questions.length)*100);
+  iqValue.textContent = `${percentage}%`;
+
+  if(percentage===100) iqText.textContent="Legendary! You know everyone perfectly! 👑✨";
+  else if(percentage>=80) iqText.textContent="Amazing! Close to fairy squad mastery! 🧚";
+  else if(percentage>=50) iqText.textContent="Good job! You know your cousins pretty well 😄";
+  else iqText.textContent="Keep trying! More family gossip awaits 😉";
+}
+
+function restartQuiz(){
+  resultScreen.classList.add("hidden");
+  startScreen.classList.remove("hidden");
+  progressBar.style.width = '0%';
+}
+</script>
+</body>
+</html>
