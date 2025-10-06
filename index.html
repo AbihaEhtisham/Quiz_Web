@@ -7,8 +7,8 @@
 <style>
   :root{
     --accent:#34d399;
-    --text:#f1f5f9;
-    --muted:#9ca3af;
+    --text:#ffffff; /* all text white now */
+    --muted:#ffffffcc; /* slightly transparent white for small text */
   }
   *{box-sizing:border-box; margin:0; padding:0;}
  body {
@@ -26,12 +26,29 @@
   .container{
     max-width:420px;
     width:100%;
-    background: rgba(0,0,0,0.6);
+    background: rgba(65, 105, 225, 0.25); /* light royal blue glass */
+    background-image: linear-gradient(
+      135deg,
+      rgba(255,255,255,0.05) 25%,
+      rgba(255,255,255,0) 25%,
+      rgba(255,255,255,0) 50%,
+      rgba(255,255,255,0.05) 50%,
+      rgba(255,255,255,0.05) 75%,
+      rgba(255,255,255,0) 75%,
+      rgba(255,255,255,0) 100%
+    );
+    background-size: 40px 40px; /* spacing for light streaks */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius:16px;
+    border: 1px solid rgba(173,216,230,0.4);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
     padding:1.5rem;
     text-align:center;
     transition: all 0.3s ease-in-out;
+    color: var(--text);
   }
+
   h1{font-size:1.6rem; margin-bottom:0.8rem;}
   p{color:var(--muted); font-size:0.95rem; margin-bottom:1.2rem;}
   .btn{
@@ -51,15 +68,16 @@
   .question.show{opacity:1; transform: translateY(0);}
   .options{display:grid; gap:0.8rem;}
   .option{
-    background: rgba(255,255,255,0.1);
+    background: rgba(173,216,230,0.2); /* light blue option */
     border-radius:10px;
     padding:0.8rem;
     cursor:pointer;
     transition:0.15s;
+    color: #ffffff;
   }
   .option.selected{
-    background: rgba(52,211,153,0.3);
-    border:1px solid #22c55e;
+    background: rgba(65,105,225,0.4); /* royal blue highlight */
+    border:1px solid #87cefa; /* subtle bright blue */
   }
   .hidden{display:none;}
   .result h2{margin-bottom:0.5rem;}
